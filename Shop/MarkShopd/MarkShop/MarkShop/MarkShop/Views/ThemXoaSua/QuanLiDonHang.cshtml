@@ -1,0 +1,99 @@
+﻿@model IEnumerable<MarkShop.HoaDon>
+
+@{
+    ViewBag.Title = "QuanLiDonHang";
+    Layout = "~/Views/Admin/LayoutAdmin.cshtml";
+}
+
+@if (Model.Count() > 0)
+{
+    <div class="layout-page-manage">
+        <h3 class="text-center pb-4 font-weight-bold" data-aos="flip-right">Quản lí đơn hàng</h3>
+        <table class="table table-striped table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Mã HD</th>
+                    <th>Ngày đặt</th>
+                    <th>Ngày giao</th>
+                    <th>Tình trạng</th>
+                    <th colspan="3" class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        @{
+                            DateTime ngayDat = DateTime.Parse(item.NgayDat.ToString());
+                            DateTime ngayGiao = DateTime.Parse(item.NgayGiao.ToString());
+                        }
+                        <td>@item.MaHD</td>
+                        <td>@ngayDat.ToShortDateString()</td>
+                        <td>@ngayGiao.ToShortDateString()</td>
+                        @if (item.TinhTrang == false)
+                        {
+                            <td style="width:155px">Chưa thanh toán</td>
+                            <td style="width:70px"><button class="btn btn-info btnDuyetDH" data-mahd="@item.MaHD">Duyệt</button></td>
+                            <td style="width:70px"><button class="btn btn-danger btnHuyDH" data-mahd="@item.MaHD">Huỷ</button></td>
+                        }
+                        else
+                        {
+                            <td style="width:155px">Đã thanh toán</td>
+                        }
+                        <td><button class="btn btn-primary btn-view-detail-cart" data-id="@item.MaHD" data-toggle="modal" data-target="#modal-view-detail">Chi tiết</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <h3 class="font-weight-bold mt-5">Tổng doanh thu: @String.Format("{0:0,0}", ViewBag.TongDoanhThu) VNĐ</h3>
+    </div>
+}
+else
+{
+    <h1 class="text-center mb-3 font-weight-bold" data-aos="flip-right">Chưa có đơn hàng nào</h1>
+}
+
+@section jsFooter{
+
+    <script>
+        $(".btn-view-detail-cart").click(function () {
+            var id = $(this).data("id");
+            $.ajax({
+                type: 'POST',
+                url: '/ThemXoaSua/ViewDetailCart',
+                data: { id: id },
+                success: function (res) {
+                    if (res.statusCode === 404) {
+                        console.log(res.message);
+                    } else {
+                        $("#rs-ajax-view-detail-cart").html(res);
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr.status);
+                    console.log(thrownError);
+                }
+            })
+        })
+    </script>
+
+}
+
+<div class="modal fade" id="modal-view-detail" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="min-width: 1150px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Chi tiết đơn hàng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="rs-ajax-view-detail-cart">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
